@@ -6,7 +6,7 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-
+app.use(express.json());
 const PORT = process.env.PORT || 3001;
 
 
@@ -14,11 +14,10 @@ const mongoose = require('mongoose');
 main().catch(err => console.log(err));
 let BookModel;
 async function main() {
-  await mongoose.connect('mongodb://localhost:27017/Book-lab11');
+  await mongoose.connect(process.env.MONGO_URL);
 
   const BookSchema = new mongoose.Schema({
     title: String,
-    imgUrl:String,
     description:String,
     email:String,
     status:String
@@ -32,7 +31,6 @@ async function main() {
 async function seedData(){
 const HTMLtestBook=new BookModel({
   title:'HTML',
-  imgUrl:'https://www.tripwiremagazine.com/wp-content/uploads/2016/10/Introducing-html_thumb.jpg',
   description:'Basic about HTML',
   email:'aseelalasaad@gmail.com',
   status:'available'
@@ -40,7 +38,6 @@ const HTMLtestBook=new BookModel({
 });
 const JavaScript=new BookModel({
   title:'JavaScript',
-  imgUrl:'https://images-na.ssl-images-amazon.com/images/I/511pKlY0zgL._SX331_BO1,204,203,200_.jpg',
   description:'Basic about JavaScript',
   email:'aseelalasaad@gmail.com',
   status:'notavailable'
@@ -49,7 +46,6 @@ const JavaScript=new BookModel({
 
 const Python=new BookModel({
   title:'Python',
-  imgUrl:'https://m.media-amazon.com/images/I/41+l48O6TbL.jpg',
   description:'Basic about Python',
   email:'aseelalasaad@gmail.com',
   status:'available'
@@ -65,6 +61,11 @@ await Python.save();
 
 //http://localhost:3010/Book?email=aseelalasaad@gmail.com
 app.get('/Book', getBook );
+app.post('/addBook',addBookhandel);
+app.delete('/deleteBook/:id',deleteBookhandel);
+
+
+
 function getBook(req,res){
   const email=req.query.email;
   BookModel.find({email:email},(err,result)=>{
@@ -77,6 +78,52 @@ function getBook(req,res){
       res.send(result)
     }
   })
+}
+
+
+ async function addBookhandel(req,res){
+
+  const title= req.body.title;
+  const description= req.body.description;
+  const email= req.body.email;
+  const status= req.body.status;
+  await BookModel.create({
+    title:title,
+    description:description,
+    email:email,
+    status:status
+  });
+  BookModel.find({email:email},(err,result)=>{
+    if(err)
+    {
+      console.log(err);
+    }
+    else{
+      
+      res.send(result)
+    }
+  })
+  
+}
+
+
+function deleteBookhandel(req,res){
+  const bookId=req.params.id;
+  const email=req.query.email;
+
+  BookModel.deleteOne({_id:bookId},(err,result)=>{
+    BookModel.find({email:email},(err,result)=>{
+      if(err)
+      {
+        console.log(err);
+      }
+      else{
+        
+        res.send(result)
+      }
+    })
+  })
+
 }
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));

@@ -63,6 +63,7 @@ await Python.save();
 app.get('/Book', getBook );
 app.post('/addBook',addBookhandel);
 app.delete('/deleteBook/:id',deleteBookhandel);
+app.put('/updateBook/:id',updateBookhandel);
 
 
 
@@ -119,6 +120,27 @@ function deleteBookhandel(req,res){
       }
       else{
         
+        res.send(result)
+      }
+    })
+  })
+
+}
+
+function updateBookhandel(req,res){
+  const id=req.params.id;
+  const {title,description,email,status}= req.body;
+  // const description= req.body.description;
+  // const email= req.body.email;
+  // const status= req.body.status;
+  BookModel.findByIdAndUpdate(id,{title,description,status},(err,result)=>{
+    BookModel.find({email:email},(err,result)=>{
+      if(err)
+      {
+        console.log(err);
+      }
+      else{
+        console.log(result);
         res.send(result)
       }
     })
